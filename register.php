@@ -1,17 +1,21 @@
 <?php
-$con = mysqli_connect('localhost:8889', 'root', 'root', 'UnityAccess');
+include 'config.php';
 
-//check if the connection happened
+$con = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+// Check if the connection happened
 if(mysqli_connect_errno()) {
-    echo "1: Connection failed"; //error code #1 = connection failed
+    echo "1: Connection failed"; // Error code #1 = connection failed
     exit();
 }
 
-$username = $_POST["name"];
-$password = $_POST["password"];
-$email = $_POST["email"];
+$accountID = mysqli_real_escape_string($con, $_POST['accountID']);
+$characterName = mysqli_real_escape_string($con, $_POST['character_name']);
+$classID = mysqli_real_escape_string($con, $_POST['classID']);
+$username = mysqli_real_escape_string($con, $_POST['username']);
+$email = mysqli_real_escape_string($con, $_POST['email']); 
+$password = mysqli_real_escape_string($con, $_POST['password']);
 
-//check if username exists
+// Check if username exists
 $usernamecheckquery = "SELECT username FROM accounts WHERE username = '$username'";
 $usernamecheck = mysqli_query($con, $usernamecheckquery);
 
@@ -26,7 +30,7 @@ if(mysqli_num_rows($usernamecheck) > 0) {
 }
 
 $salt = "\$5\$rounds=5000\$" . "steamedhams" . $username . "\$";
-$hash = crypt($password, $salt);
+$hash = crypt($password, $salt); // You need to have $password defined somewhere
 
 $insertuserquery = "INSERT INTO accounts (username, hash, salt, email, `account creation date`, status, email_subscription)
 VALUES ('$username', '$hash', '$salt', '$email', CURDATE(), 'active', 1)";
