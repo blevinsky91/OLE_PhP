@@ -28,9 +28,9 @@ if($action == "insert")
     $ammoTypeThree = isset($_POST['ammo_type_three']) ? $_POST['ammo_type_three'] : 0;
     $requestMessage = isset($_POST['request_message']) ? $_POST['request_message'] : 0;
 
-    $query = "INSERT INTO radio_requests (characterID, mission_type, commencement, rations, bandages, lock_picks, med_kits, water, ammo_boxes_one, ammo_boxes_two, 
+    $query = "INSERT INTO radio_requests (characterID, outpostID, mission_type, commencement, rations, bandages, lock_picks, med_kits, water, ammo_boxes_one, ammo_boxes_two, 
             ammo_boxes_three, ammo_type_one, ammo_type_two, ammo_type_three, request_message)
-             VALUES ('$characterID', '$missionType', '$commencement', '$rations', '$bandages', '$lockpicks', '$medkits', '$water', '$ammoBoxesOne', '$ammoBoxesTwo',
+             VALUES ('$characterID', (SELECT outpostID FROM characters WHERE characterID = '$characterID'), '$missionType', '$commencement', '$rations', '$bandages', '$lockpicks', '$medkits', '$water', '$ammoBoxesOne', '$ammoBoxesTwo',
             '$ammoBoxesThree', '$ammoTypeOne', '$ammoTypeTwo', '$ammoTypeThree', '$requestMessage')";
 
     $insert = mysqli_query($con, $query);
@@ -42,5 +42,40 @@ if($action == "insert")
     }
 
     mysqli_close($con);
+}
+if($action == "select")
+{
+    $query = "SELECT radio_requests.distressCall_ID,
+            (SELECT outpost_name FROM outpost WHERE outpostID = radio_requests.outpostID) AS outpost_name,
+            (SELECT outpost_ranking FROM outpost WHERE outpostID = radio_requests.outpostID) AS outpost_ranking,
+            radio_requests.mission_type,
+            radio_requests.commencement
+            FROM radio_requests";
+
+    $result = mysqli_query($con, $query);
+
+    if($result)
+    {
+        $response = array();
+        while($row = mysqli_fetch_assoc($result))
+        {
+            $response[] = $row;
+        }
+
+        // Set response headers to indicate JSON content
+        header('Content-Type: application/json');
+        
+        // Output JSON response
+        echo json_encode($response);
+    }
+    else 
+    {
+        echo "2: Query failed. Error: " . mysqli_error($con); // Error code #2 = query failed
+    }
+    mysqli_close($con);
+}
+else 
+{
+    echo "Invalid action";
 }
 ?>
